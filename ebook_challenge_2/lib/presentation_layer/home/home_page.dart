@@ -27,7 +27,7 @@ class _HomePageState extends State<HomePage> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pushNamed(context, '/bookmark');
+              
             },
             child: const Text('Favoritos'),
           )

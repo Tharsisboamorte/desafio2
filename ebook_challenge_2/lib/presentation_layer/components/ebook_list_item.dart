@@ -1,5 +1,10 @@
 
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vocsy_epub_viewer/epub_viewer.dart';
 
 import '../../data_layer/model/book_model.dart';
@@ -8,10 +13,12 @@ import 'bookmark_iconButton.dart';
 
 class EbookListItem extends StatefulWidget {
   final BookModel bookModel;
+  final int index;
 
   const EbookListItem({
     super.key,
     required this.bookModel,
+    required this.index,
   });
 
   @override
@@ -19,7 +26,23 @@ class EbookListItem extends StatefulWidget {
 }
 
 class _EbookListItemState extends State<EbookListItem> {
-  bool isBookMarked = true;
+  final List<bool> _isBookMarked = List.generate(10, (index) => false);
+  bool loading = true;
+
+  @override
+  void initState() {
+    _loadButtonState();
+    super.initState();
+  }
+
+  _loadButtonState() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      for (int i = 0; i < _isBookMarked.length; i++) {
+        _isBookMarked[i] = (prefs.getBool('buttonState$i') ?? false);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,32 +52,33 @@ class _EbookListItemState extends State<EbookListItem> {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 18.0, bottom: 4.0),
-          child: InkWell(
-            highlightColor: Colors.transparent,
-            hoverColor: Colors.transparent,
-            onTap: () {
-              downloadAndOpenEbook(widget.bookModel.downloadUrl);
-            },
-            child: SizedBox(
-              width: 100,
-              height: 130,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.network(
-                    widget.bookModel.coverUrl,
-                    width: sizeScreen.width,
-                    height: 150,
+        InkWell(
+          highlightColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          splashColor: Colors.transparent,
+          onTap: () {
+            downloadAndOpenBook(widget.bookModel.downloadUrl);
+          },
+          child: SizedBox(
+            width: 100,
+            height: 130,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.network(
+                  fit: BoxFit.fill,
+                  widget.bookModel.coverUrl,
+                  width: sizeScreen.width,
+                  height: 150,
+                ),
+                Positioned(
+                  top: -15,
+                  right: -10,
+                  child: BookmarkIconButton(
+                    index: widget.index,
                   ),
-                  const Positioned(
-                    top: 0,
-                    right: 0,
-                    child: BookmarkIconButton(),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -72,8 +96,25 @@ class _EbookListItemState extends State<EbookListItem> {
     );
   }
 
-  Future<void> downloadAndOpenEbook(String url) async {
-    VocsyEpub.setConfig();
+  Future<void> downloadAndOpenBook(String downloadUrl) async {
+    final dio = Dio();
+    final dir = await getApplicationDocumentsDirectory();
+    final filePath = '${dir.path}/book.epub';
 
+    await dio.download(downloadUrl, filePath).whenComplete(() {
+      if (Platform.isAndroid) {
+        VocsyEpub.open(filePath);
+        VocsyEpub.setConfig(
+            scrollDirection: EpubScrollDirection.VERTICAL,
+            identifier: 'book'
+        );
+      } else if (Platform.isIOS) {
+        VocsyEpub.open(filePath);
+        VocsyEpub.setConfig(
+            scrollDirection: EpubScrollDirection.VERTICAL,
+            identifier: 'book'
+        );
+      }
+    });
   }
 }
