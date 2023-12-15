@@ -1,18 +1,21 @@
+
+import 'package:ebook_challenge_2/data_layer/model/book_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BookmarkIconButton extends StatefulWidget {
-
+  final int index;
+  final void action;
   const BookmarkIconButton(
-      {super.key});
+      {super.key, required this.index, this.action,});
 
   @override
   State<BookmarkIconButton> createState() => _BookmarkIconButtonState();
 }
 
 class _BookmarkIconButtonState extends State<BookmarkIconButton> {
-  bool _isBookMarked = false;
+  final List<bool> _isBookMarked = List.generate(10, (index) => false);
 
   @override
   void initState() {
@@ -20,16 +23,19 @@ class _BookmarkIconButtonState extends State<BookmarkIconButton> {
     super.initState();
   }
 
+
   _loadButtonState() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      _isBookMarked = (prefs.getBool('buttonState') ?? false);
+      for (int i = 0; i < _isBookMarked.length; i++) {
+        _isBookMarked[i] = (prefs.getBool('buttonState$i') ?? false);
+      }
     });
   }
 
-  _saveButtonState() async {
+  _saveButtonState(int index) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('buttonState', _isBookMarked);
+    prefs.setBool('buttonState$index', _isBookMarked[index]);
   }
 
   @override
@@ -38,17 +44,17 @@ class _BookmarkIconButtonState extends State<BookmarkIconButton> {
       hoverColor: Colors.transparent,
       highlightColor: Colors.transparent,
       icon: SvgPicture.asset(
-        _isBookMarked
+        _isBookMarked[widget.index]
             ? 'assets/bookmark_on.svg'
             : 'assets/bookmark_off.svg',
         height: 35,
         width: 20,
       ),
       onPressed: () {
+        widget.action;
         setState(() {
-          _isBookMarked = !_isBookMarked;
-          _saveButtonState();
-          // Add to Favorite Section
+          _isBookMarked[widget.index] = !_isBookMarked[widget.index];
+          _saveButtonState(widget.index);
         });
       },
     );

@@ -25,7 +25,10 @@ class _BookShelfPageState extends State<BookShelfPage> {
         padding: const EdgeInsets.all(5.0),
         children: List.generate(10, (index) {
           return Center(
-            child: EbookListItem(bookModel: widget.bookshelf[index]),
+            child: EbookListItem(
+              bookModel: widget.bookshelf[index],
+              index: index,
+            ),
           );
         }),
       ),

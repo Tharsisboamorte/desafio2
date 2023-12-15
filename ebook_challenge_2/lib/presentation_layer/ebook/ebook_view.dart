@@ -1,7 +1,10 @@
+import 'package:ebook_challenge_2/data_layer/model/book_model.dart';
 import 'package:flutter/material.dart';
 
 class EbookViewPage extends StatefulWidget {
-  const EbookViewPage({super.key});
+
+  const EbookViewPage(
+      {super.key,});
 
   @override
   State<EbookViewPage> createState() => _EbookViewPageState();
@@ -10,8 +13,8 @@ class EbookViewPage extends StatefulWidget {
 class _EbookViewPageState extends State<EbookViewPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-
+    return const Center(
+      child: CircularProgressIndicator(),
     );
   }
 }

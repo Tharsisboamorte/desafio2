@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:ebook_challenge_2/data_layer/model/book_model.dart';
+import 'package:ebook_challenge_2/infra/utils/utils.dart';
+import 'package:ebook_challenge_2/presentation_layer/bookshelf/bookshelf_page.dart';
 import 'package:flutter/material.dart';
 
 class BookmarkPage extends StatefulWidget {
@@ -13,6 +17,16 @@ class BookmarkPage extends StatefulWidget {
 class _BookmarkPageState extends State<BookmarkPage> {
   List<BookModel> bookshelfBookmarked = [];
 
+  @override
+  void initState() {
+    loadBookmarks();
+    super.initState();
+  }
+
+  void loadBookmarks() async {
+    bookshelfBookmarked = await BookService().loadBooks();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +34,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
       appBar: AppBar(
         title: const Text('Favoritos'),
       ),
-      body: ,
+      body: BookShelfPage(bookshelf: bookshelfBookmarked),
     );
   }
 }
